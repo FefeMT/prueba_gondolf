@@ -33,7 +33,6 @@ public class Juego extends InterfaceJuego{
 	private Image[] spritesDerecha;
 	private Image[] barriles;
 	private int framesMago;
-	private int framesFireball;	
 	
 	private int entornoAncho = 800;
 	private int entornoAlto = 600;
@@ -72,9 +71,6 @@ public class Juego extends InterfaceJuego{
 		
 		// Inicializa a Gondolf
 		this.gondolf = new Gondolf(400, 300);
-		
-        
-        
 
 		// Inicializa lso murcielagos
         this.murcielagos = new ArrayList<>();
@@ -88,7 +84,7 @@ public class Juego extends InterfaceJuego{
         this.barraEstado = new BarraEstado();
         
         // Inicializa los Hechizos
-        inicializarHechizos();
+        asignarBotonesHechizos();
         
         inicializarObstaculos();
         
@@ -107,14 +103,15 @@ public class Juego extends InterfaceJuego{
 	 */
 	public void tick() {
 		
+		actualizarEstadoJuego();
+
 		dibujarElementos();
 		
-		actualizarEstadoJuego();
-		
-		if (!gano) {
+		if (!gano && !perdio) {
 		// Procesamiento de un instante de tiempo
         	this.procesarEntrada();
 			this.contadoresDeFrames();
+//			verSiGanoOPerdio();
 			
 		}
 		if (gano) {
@@ -130,12 +127,11 @@ public class Juego extends InterfaceJuego{
 	
 	
 	private void actualizarEstadoJuego() {
-		verSiGanoOPerdio();
         gondolf.actualizar();
         manejarSpawnEnemigos();
-        actualizarEnemigos();
+        actualizarHechizos();
         estaApretandoUnBoton();
-        casteoUnHechizo();
+        actualizarEnemigos();
 	}
 	
 	private void verSiGanoOPerdio() {
@@ -155,7 +151,9 @@ public class Juego extends InterfaceJuego{
     	dibujar(entorno, gondolf.getX(), gondolf.getY(), framesMago);
     	
     	
-//    	fireBall.dibujar(entorno);
+    	if (FireBall != null && FireBall.getEstado()) {
+    		FireBall.dibujarse(entorno);
+    	}
         
     	// Dibujar obstáculos (opcional, para debug)
         for (Obstaculo obs : obstaculos) {
@@ -180,11 +178,6 @@ public class Juego extends InterfaceJuego{
 	private void contadoresDeFrames() {
 		int sec = entorno.tiempo()/100;
 		framesMago = sec%2;
-		framesFireball = sec%4;
-	}
-	
-	public boolean colision(double x1, double y1, double x2, double y2, double dist) {
-		return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) < dist * dist;
 	}
 	
 	
@@ -194,21 +187,21 @@ public class Juego extends InterfaceJuego{
 //
 //****************************************************************************
 	
-	private void inicializarHechizos() {
-		this.botonZap = this.menu.getBotonZap();
-		this.botonFireBall = this.menu.getBotonFireBall();
-        this.FireBall = new FireBall(mouseX,mouseY);
-        this.Zap = new Zap(gondolf.getX(),gondolf.getY(),gondolf.getX(),gondolf.getY());
+	private void actualizarHechizos() {
+	    if (FireBall != null && FireBall.getEstado()) {
+	        FireBall.actualizar();
+	        if (!FireBall.getEstado()) {
+	            botonFireBall.apretarBoton();
+	        }
+	    }
 	}
-	
-	private void casteoUnHechizo() {
-		if (entorno.mousePresente() && FireBall.getEstado() && (entorno.sePresionoBoton(entorno.BOTON_DERECHO))) {
-			// Castear hechizo
-			while (FireBall.animacionActiva()){
-				this.FireBall.dibujarse(entorno, entorno.mouseX(),entorno.mouseY(), framesFireball);				
-			}
-			botonFireBall.apretarBoton();
-		}
+
+	private void casteoFireBall() {
+	    if (botonFireBall.getEstado() && gondolf.getManaActual() >= 20 && (entorno.mousePresente() && entorno.mouseX() < mapaAncho) && (entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO))) { // [cite: 27]
+	        this.FireBall = new FireBall(entorno.mouseX(), entorno.mouseY());
+	        this.FireBall.castear(entorno.mouseX(), entorno.mouseY());
+	        gondolf.restarMana(this.FireBall.getCoste());
+	    }
 	}
 	
 	
@@ -219,16 +212,36 @@ public class Juego extends InterfaceJuego{
 //
 //****************************************************************************
 	
+	private void asignarBotonesHechizos() {
+		this.botonZap = this.menu.getBotonZap();
+		this.botonFireBall = this.menu.getBotonFireBall();
+	}
+	
 	private void estaApretandoUnBoton() {
-		if (botonZap.estaAdentro(entorno.mouseX(), entorno.mouseY()) && (entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO))) {
-			botonZap.apretarBoton();
-			this.Zap.castear();
-		}
-		if ((botonFireBall.estaAdentro(entorno.mouseX(), entorno.mouseY()) && entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO))) {
-			botonFireBall.apretarBoton();
-			this.FireBall.castear();
-		}
-		
+	    mouseX = entorno.mouseX();
+	    mouseY = entorno.mouseY();
+
+	    if (botonZap.estaAdentro(mouseX, mouseY) && entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) { // [cite: 24]
+	        if (!botonZap.getEstado()) {
+	            botonZap.apretarBoton();
+	            if (botonFireBall.getEstado()) {
+	                botonFireBall.apretarBoton();
+	            }
+	        } else {
+	            botonZap.apretarBoton();
+	        }
+	    }
+	    if (botonFireBall.estaAdentro(mouseX, mouseY) && entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) { // [cite: 24]
+	        if (!botonFireBall.getEstado()) {
+	            botonFireBall.apretarBoton();
+	            if (botonZap.getEstado()) { 
+	                botonZap.apretarBoton();
+	            }
+	        } else {
+	            botonFireBall.apretarBoton();
+	        }
+	    }
+	    casteoFireBall();
 	}
 	
 //****************************************************************************
@@ -274,10 +287,6 @@ public class Juego extends InterfaceJuego{
             if (gondolf.getRectangulo().intersects(m.getRectangulo())) {
                 gondolf.recibirDaño(10);
                 m.recibirDaño(1);
-                
-                if (gondolf.getVidaActual() <= 0) {
-                    perdio = true;
-                }
             }
             
             // Colisión con proyectiles
@@ -289,9 +298,8 @@ public class Juego extends InterfaceJuego{
             }
             
          // Colisión con Fireball
-            if (FireBall.getHitbox().intersects(m.getRectangulo()) || colision(FireBall.getX(),FireBall.getY(),m.getX(),m.getY(),FireBall.getTamaño())) {
+            if (FireBall != null && FireBall.getEstado() && FireBall.getHitbox().intersects(m.getRectangulo())) {
                 m.recibirDaño(FireBall.getDaño());
-                FireBall.descastear();
             }
             
                         

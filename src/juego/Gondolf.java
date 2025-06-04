@@ -130,9 +130,12 @@ public class Gondolf {
 	            }
 	            
 	            proyectil.add(new Proyectil(x, y, destinoX, destinoY));
-	            manaActual -= 2;
 	            cooldownDisparo = COOLDOWN_DISPARO;
 	        }
+	    }
+	    
+	    public void restarMana(int manaConsumido) {
+	    	this.manaActual -= manaConsumido;
 	    }
 
 	    

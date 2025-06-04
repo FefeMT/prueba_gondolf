@@ -15,9 +15,9 @@ public class Menu {
 	private Image imagenFondo;
 	
 	private Image imagenMenuHechizos;
-	private FireBall FireBall;
+	private Image FireBall;
 	private boton BotonFireBall;
-	private Zap Zap;
+	private Image Zap;
 	private boton BotonZap;
 	
 	
@@ -28,10 +28,10 @@ public class Menu {
 		this.alto = 100;
 		this.imagenFondo = Herramientas.cargarImagen("elementos/Menu/FondoMenu.png");
 		this.imagenMenuHechizos = Herramientas.cargarImagen("elementos/Menu/New Piskel.png");
-		this.FireBall = new FireBall(x,y);
-		this.BotonFireBall = new boton(x,450,120,40,FireBall.getImagenBoton());
-		this.Zap = new Zap(x,y,0,0);
-		this.BotonZap = new boton(x,350,120,40,Zap.getImagenBoton());
+		this.FireBall = Herramientas.cargarImagen("elementos/Menu/fireball boton.png");
+		this.BotonFireBall = new boton(x,450,120,40,FireBall);
+		this.Zap = Herramientas.cargarImagen("elementos/Menu/zap boton.png");
+		this.BotonZap = new boton(x,350,120,40,Zap);
 		
 	}
 	
