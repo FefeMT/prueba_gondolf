@@ -10,7 +10,8 @@ import entorno.Herramientas;
 public class Jefe {
     private int x;
     private int y;
-    private int tamaño = 150; 
+    private int tamaño = 150;
+    private double angulo = 150;
     private int velocidad = 1; 
     private boolean activo = true;
     private int vida = 200; 
@@ -55,73 +56,31 @@ public class Jefe {
         }
     }
 
-    public void moverHacia(int objetivoX, int objetivoY, ArrayList<Obstaculo> obstaculos) {
+    public void moverHacia(Gondolf gondolf) {
         if (!activo) return;
-
-        int nuevaX = x;
-        int nuevaY = y;
-
-        // Mover en X
-        if (objetivoX > x) {
-            nuevaX += velocidad;
-            direccion = "d"; // Derecha
-        } else if (objetivoX < x) {
-            nuevaX -= velocidad;
-            direccion = "a"; // Izquierda
-        }
-
-        // Mover en Y
-        if (objetivoY > y) {
-            nuevaY += velocidad;
-            if (direccion.equals("s")) direccion = "s"; // Ya es 's', no cambiar
-            else direccion = "s"; // Abajo
-        } else if (objetivoY < y) {
-            nuevaY -= velocidad;
-            if (direccion.equals("w")) direccion = "w"; // Ya es 'w', no cambiar
-            else direccion = "w"; // Arriba
-        }
-
-        // Verificar colisión con obstáculos antes de moverse
-        Rectangle futuraHitbox = new Rectangle(nuevaX - tamaño / 2, nuevaY - tamaño / 2, tamaño, tamaño);
-        boolean colisiona = false;
-        for (Obstaculo o : obstaculos) {
-            if (futuraHitbox.intersects(o.getHitbox())) {
-                colisiona = true;
-                break;
-            }
-        }
-
-        if (!colisiona) {
-            x = nuevaX;
-            y = nuevaY;
-        } else {
-            // Si hay colisión al moverse en ambos ejes, intentar mover solo en X o solo en Y
-            // Intentar solo en X
-            futuraHitbox = new Rectangle(nuevaX - tamaño / 2, y - tamaño / 2, tamaño, tamaño);
-            colisiona = false;
-            for (Obstaculo o : obstaculos) {
-                if (futuraHitbox.intersects(o.getHitbox())) {
-                    colisiona = true;
-                    break;
-                }
-            }
-            if (!colisiona) {
-                x = nuevaX;
+        double deltaX = gondolf.getX() - x;
+        double deltaY = gondolf.getY() - y;
+        
+        this.angulo = Math.atan2(deltaY, deltaX);
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            if (deltaX > 0) {
+                direccion = "d";
             } else {
-                // Intentar solo en Y
-                futuraHitbox = new Rectangle(x - tamaño / 2, nuevaY - tamaño / 2, tamaño, tamaño);
-                colisiona = false;
-                for (Obstaculo o : obstaculos) {
-                    if (futuraHitbox.intersects(o.getHitbox())) {
-                        colisiona = true;
-                        break;
-                    }
-                }
-                if (!colisiona) {
-                    y = nuevaY;
-                }
+                direccion = "a";
+            }
+        } else {
+            if (deltaY > 0) {
+                direccion = "s";
+            } else {
+                direccion = "w";
             }
         }
+        
+		this.x += Math.cos(this.angulo) * velocidad;
+		this.y += Math.sin(this.angulo) * velocidad;
+		
+		actualizarAnimacion();
+        
     }
 
     public void actualizarAnimacion() {
@@ -132,15 +91,15 @@ public class Jefe {
         }
     }
 
-    public void dibujar(Entorno entorno, int camaraX, int camaraY) {
+    public void dibujar(Entorno entorno) {
         if (!activo) return;
 
         Image spriteActual = obtenerSpriteActual();
         if (spriteActual != null) { // Solo dibujar si el sprite fue cargado
-            entorno.dibujarImagen(spriteActual, x - camaraX, y - camaraY, 0, 0.2); // Escala para que se vea su tamaño real
+            entorno.dibujarImagen(spriteActual, x, y, 0, 2); // Escala para que se vea su tamaño real
         } else {
             // Dibujar un rectángulo si el sprite no carga, para depuración
-            entorno.dibujarRectangulo(x - camaraX, y - camaraY, tamaño, tamaño, 0, Color.MAGENTA); // Color para el jefe
+            entorno.dibujarRectangulo(x, y, tamaño, tamaño, 0, Color.MAGENTA); // Color para el jefe
         }
 
         // Dibujar barra de vida del Jefe (Opcional)
@@ -148,8 +107,8 @@ public class Jefe {
             double anchoBarra = tamaño;
             double altoBarra = 5;
             double vidaPorcentaje = (double) vida / 200.0; 
-            entorno.dibujarRectangulo(x - camaraX, y - camaraY - tamaño/2 - 10, anchoBarra, altoBarra, 0, Color.GRAY); // Fondo
-            entorno.dibujarRectangulo(x - camaraX - (anchoBarra - anchoBarra * vidaPorcentaje) / 2, y - camaraY - tamaño/2 - 10, anchoBarra * vidaPorcentaje, altoBarra, 0, Color.RED); 
+            entorno.dibujarRectangulo(x, y - tamaño/2 - 10, anchoBarra, altoBarra, 0, Color.GRAY); // Fondo
+            entorno.dibujarRectangulo(x - (anchoBarra - anchoBarra * vidaPorcentaje) / 2, y - tamaño/2 - 10, anchoBarra * vidaPorcentaje, altoBarra, 0, Color.RED); 
         }
     }
 
@@ -187,7 +146,7 @@ public class Jefe {
     public int getVida() { return vida; }
     public int getDañoAtaque() { return dañoAtaque; }
 
-	public void mover(int x2, int y2, ArrayList<Obstaculo> obstaculos) {
+	public void mover(Gondolf gondolf) {
 		// TODO Auto-generated method stub
 		
 	}

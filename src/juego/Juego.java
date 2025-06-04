@@ -55,6 +55,14 @@ public class Juego extends InterfaceJuego{
 // Temporizadores y contadores
     private int tiempoSpawn = 0;
     private int enemigosEliminados = 0;
+    
+    
+    private int nivelActual = 1;
+    private int enemigosDerrotadosEnNivel = 0;
+    private final int[] ENEMIGOS_POR_NIVEL = {0, 5, 8, 12, 15, 1}; // Nivel 0 no se usa, 1-4 murcielagos, Nivel 5 es 1 jefe
+    private Jefe jefeFinal;
+    private boolean juegoTerminado = false;
+    
 
 // Estado del juego
     private boolean gano = false;
@@ -111,14 +119,19 @@ public class Juego extends InterfaceJuego{
 		actualizarEstadoJuego();
 
 		dibujarElementos();
+
+		this.procesarEntrada();
+		this.contadoresDeFrames();
 		
 		if (!gano && !perdio) {
-        	this.procesarEntrada();
-			this.contadoresDeFrames();
 			verSiGanoOPerdio();
 			
 		}
 		if (gano) {
+//			desInstanciarMurcielagos();
+//			instanciarJefe();
+//			dibujarJefe();
+			
 			entorno.dibujarImagen(Herramientas.cargarImagen("elementos/Mapa/You Win.jpg"), 400, 300, 0, 2);
 			return;
 		}
@@ -137,6 +150,7 @@ public class Juego extends InterfaceJuego{
         actualizarHechizos();
         estaApretandoUnBoton();
         actualizarEnemigos();
+        actualizarJefe();
 	}
 	
 	private void verSiGanoOPerdio() {
@@ -319,6 +333,12 @@ public class Juego extends InterfaceJuego{
             System.err.println("Error al generar murciélago: " + e.getMessage());
         }
     }
+    
+    private void desInstanciarMurcielagos() {
+    	for (int i = 0; i < murcielagos.length; i++) {
+    		murcielagos[i] = null;
+    	}
+    }
 
     private void actualizarEnemigos() {
     	for (int i = 0; i < murcielagos.length; i++) {
@@ -365,6 +385,43 @@ public class Juego extends InterfaceJuego{
     				enemigosEliminados++;
     			}
     		}
+    	}
+    }
+    
+    
+  //****************************************************************************
+    //
+//    				                       - Funciones Jefe -
+    //
+    //****************************************************************************
+    
+    
+    private void instanciarJefe() {
+    	this.jefeFinal = new Jefe(300,300);
+    }
+    
+    private void dibujarJefe() {
+    	jefeFinal.dibujar(entorno);
+    }
+    
+    private void actualizarJefe() {
+    	if (jefeFinal != null) {
+    		for (Proyectil p : gondolf.getProyectiles()) {
+    			if (jefeFinal != null && p.getRectangulo().intersects(jefeFinal.getRectangulo())) {
+    				jefeFinal.recibirDaño(p.getDaño());
+    				p.desactivar();
+    			}
+    		}
+    		
+    		// Colisión con Fireball
+    		if (FireBall != null && jefeFinal != null && FireBall.getEstado() && FireBall.getHitbox().intersects(jefeFinal.getRectangulo())) {
+    			jefeFinal.recibirDaño(FireBall.getDaño());
+    		}
+    		// Colisión con AcidSplash
+    		if (AcidSplash != null && jefeFinal != null && AcidSplash.getEstado() && AcidSplash.getHitbox().intersects(jefeFinal.getRectangulo())) {
+    			jefeFinal.recibirDaño(AcidSplash.getDaño());
+    		}
+    		jefeFinal.moverHacia(gondolf);
     	}
     }
     
