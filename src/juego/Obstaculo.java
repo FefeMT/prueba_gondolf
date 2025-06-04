@@ -7,6 +7,8 @@ import entorno.Herramientas;
 
 public class Obstaculo {
     private int x, y;
+    private int ancho = 32;
+    private int alto = 32;
     private Rectangle hitbox;
     private Image imagen;
 
@@ -16,10 +18,9 @@ public class Obstaculo {
         this.imagen = Herramientas.cargarImagen(rutaImagen);
 
         if (imagen != null) {
-            this.hitbox = new Rectangle(x, y, imagen.getWidth(null), imagen.getHeight(null));
+            this.hitbox = new Rectangle(x, y, ancho, alto);
         } else {
             System.err.println("⚠️ No se pudo cargar la imagen del obstáculo: " + rutaImagen);
-            this.hitbox = new Rectangle(x, y, 32, 32); // Fallback si no se carga la imagen
         }
     }
 
@@ -27,7 +28,7 @@ public class Obstaculo {
         if (imagen != null) {
             entorno.dibujarImagen(imagen, x, y, 0);
         } else {
-            entorno.dibujarRectangulo(x, y, 32, 32, 0, java.awt.Color.RED);
+            entorno.dibujarRectangulo(x, y, ancho, alto, 0, java.awt.Color.RED);
         }
     }
 

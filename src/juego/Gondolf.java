@@ -39,7 +39,7 @@ public class Gondolf {
 	      this.direccion = direccion;
 	   }
 
-	   public void mover(int dx, int dy, ArrayList<Obstaculo> obstaculos) {
+	   public void mover(int dx, int dy, Obstaculo[] obs) {
 	    	Rectangle hitbox = this.hitbox; 
 	    	Rectangle nuevaPosicion = new Rectangle(
 	    	    hitbox.x + dx,
@@ -48,15 +48,14 @@ public class Gondolf {
 	    	    hitbox.height
 	    	);
 
-
 	        boolean colision = false;
-	        for (Obstaculo obs : obstaculos) {
-	            if (nuevaPosicion.intersects(obs.getHitbox())) {
-	                colision = true;
-	                break;
-	            }
+	        
+	        for (int i = 0; i < obs.length; i++) {
+	        	if (nuevaPosicion.intersects(obs[i].getHitbox())) {
+	            colision = true;
+	        	}
 	        }
-
+	        
 	        if (!colision) {
 	            this.x += dx;
 	            this.y += dy;

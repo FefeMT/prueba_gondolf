@@ -24,8 +24,9 @@ public class Juego extends InterfaceJuego{
 	private AcidSplash AcidSplash;
 	private boton botonFireBall;
 	private FireBall FireBall;
-    private ArrayList<Murcielago> murcielagos;
-    private ArrayList<Obstaculo> obstaculos = new ArrayList<>();
+    private Murcielago[] murcielagos;
+//    private ArrayList<Murcielago> murcielagos;
+    private Obstaculo[] obstaculos;
     private Random random;
     private BarraEstado barraEstado;
 	
@@ -33,7 +34,6 @@ public class Juego extends InterfaceJuego{
 	private Image[] spritesAbajo;
 	private Image[] spritesIzquierda;
 	private Image[] spritesDerecha;
-	private Image[] barriles;
 	private int framesMago;
 	
 	private int entornoAncho = 800;
@@ -47,8 +47,10 @@ public class Juego extends InterfaceJuego{
 	
 	private Menu menu;
 	
-    private static final int MAX_ENEMIGOS = 20;
-    private static final int OBSTACULO_SIZE = 32;
+    private int MAX_ENEMIGOS = 20;
+    private int enemigosAMatar = 20;
+    
+    private int MAX_OBSTACULOS = 5;
     
 // Temporizadores y contadores
     private int tiempoSpawn = 0;
@@ -72,10 +74,11 @@ public class Juego extends InterfaceJuego{
 		this.fondo = new Fondo(300, 300);
 		
 		// Inicializa a Gondolf
-		this.gondolf = new Gondolf(400, 300);
+		this.gondolf = new Gondolf(300, 300);
 
 		// Inicializa lso murcielagos
-        this.murcielagos = new ArrayList<>();
+//        this.murcielagos = new ArrayList<>();
+		this.murcielagos = new Murcielago[MAX_ENEMIGOS];
 
 		// Inicializa la variable random
         this.random = new Random();
@@ -129,14 +132,15 @@ public class Juego extends InterfaceJuego{
 	
 	private void actualizarEstadoJuego() {
         gondolf.actualizar();
-        manejarSpawnEnemigos();
+//        manejarSpawnEnemigos();
+        spawnearMurcielago();
         actualizarHechizos();
         estaApretandoUnBoton();
         actualizarEnemigos();
 	}
 	
 	private void verSiGanoOPerdio() {
-		if (gondolf.getVidaActual() > 0 && enemigosEliminados >= 40) {
+		if (gondolf.getVidaActual() > 0 && enemigosEliminados >= enemigosAMatar) {
 			this.gano = true;
 		}
 		if (gondolf.getVidaActual() <= 0) {
@@ -157,8 +161,10 @@ public class Juego extends InterfaceJuego{
     	}
         
         // Dibujar enemigos
-        for (Murcielago m : murcielagos) {
-            m.dibujar(entorno);
+    	for (int i = 0; i < murcielagos.length; i++) {
+    		if (murcielagos[i] != null) {
+    			murcielagos[i].dibujar(entorno);
+    		}
         }
         
         // Dibujar proyectiles
@@ -290,69 +296,76 @@ public class Juego extends InterfaceJuego{
 //				                       - Funciones Murcielagos -
 //
 //****************************************************************************
-	
-	private void manejarSpawnEnemigos() {
-        tiempoSpawn++;
-        if (tiempoSpawn >= 10 && murcielagos.size() < MAX_ENEMIGOS) {
-            spawnearMurcielago();
-            tiempoSpawn = 0;
-        }
-    }
 
     private void spawnearMurcielago() {
         try {
-            int lado = random.nextInt(4);
-            int x = 0, y = 0;
+        	tiempoSpawn++;
+        	for (int i = 0; i < murcielagos.length; i++) {
+        		int lado = random.nextInt(4);
+        		int x = 0, y = 0;
             
-            switch(lado) {
-                case 0: x = random.nextInt(mapaAncho); y = -20; break;
-                case 1: x = mapaAncho + 20; y = random.nextInt(mapaAlto); break;
-                case 2: x = random.nextInt(mapaAncho); y = mapaAlto + 20; break;
-                case 3: x = -20; y = random.nextInt(mapaAlto); break;
+            	switch(lado) {
+            	    case 0: x = random.nextInt(mapaAncho); y = -20; break;
+            	    case 1: x = mapaAncho + 20; y = random.nextInt(mapaAlto); break;
+            	    case 2: x = random.nextInt(mapaAncho); y = mapaAlto + 20; break;
+            	    case 3: x = -20; y = random.nextInt(mapaAlto); break;
+            	}
+            	if (tiempoSpawn >= 50 && murcielagos[i] == null) {
+            		murcielagos[i] = new Murcielago(x, y);
+            		tiempoSpawn = 0;
+            	}
             }
-            
-            murcielagos.add(new Murcielago(x, y));
         } catch (Exception e) {
             System.err.println("Error al generar murciélago: " + e.getMessage());
         }
     }
 
     private void actualizarEnemigos() {
-        Iterator<Murcielago> iter = murcielagos.iterator();
-        while (iter.hasNext()) {
-            Murcielago m = iter.next();
-            
-            m.mover(gondolf);
-            
-            // Colisión con jugador
-            if (gondolf.getRectangulo().intersects(m.getRectangulo())) {
-                gondolf.recibirDaño(10);
-                m.recibirDaño(1);
-            }
-            
-            // Colisión con proyectiles
-            for (Proyectil p : gondolf.getProyectiles()) {
-                if (p.getRectangulo().intersects(m.getRectangulo())) {
-                    m.recibirDaño(p.getDaño());
-                    p.desactivar();
-                }
-            }
-            
-         // Colisión con Fireball
-            if (FireBall != null && FireBall.getEstado() && FireBall.getHitbox().intersects(m.getRectangulo())) {
-                m.recibirDaño(FireBall.getDaño());
-            }
-            // Colisión con AcidSplash
-            if (AcidSplash != null && AcidSplash.getEstado() && AcidSplash.getHitbox().intersects(m.getRectangulo())) {
-            	m.recibirDaño(AcidSplash.getDaño());
-            }
-            
-                        
-            if (!m.isActivo()) {
-                iter.remove();
-                enemigosEliminados++;
-            }
-        }
+    	for (int i = 0; i < murcielagos.length; i++) {
+    		if (murcielagos[i] != null) {
+    			murcielagos[i].mover(gondolf);
+    			
+    			// Colisión con jugador
+    			if (gondolf.getRectangulo().intersects(murcielagos[i].getRectangulo())) {
+    				gondolf.recibirDaño(10);
+    				murcielagos[i].recibirDaño(1);
+    				if (!murcielagos[i].isActivo()) {
+    					murcielagos[i] = null;
+    				}
+    			}
+    			
+    			// Colisión con proyectiles
+    			for (Proyectil p : gondolf.getProyectiles()) {
+    				if (murcielagos[i] != null && p.getRectangulo().intersects(murcielagos[i].getRectangulo())) {
+    					murcielagos[i].recibirDaño(p.getDaño());
+    					if (!murcielagos[i].isActivo()) {
+        					murcielagos[i] = null;
+        				}
+    					p.desactivar();
+    				}
+    			}
+    			
+    			// Colisión con Fireball
+    			if (FireBall != null && murcielagos[i] != null && FireBall.getEstado() && FireBall.getHitbox().intersects(murcielagos[i].getRectangulo())) {
+    				murcielagos[i].recibirDaño(FireBall.getDaño());
+    				if (!murcielagos[i].isActivo()) {
+    					murcielagos[i] = null;
+    				}
+    			}
+    			// Colisión con AcidSplash
+    			if (AcidSplash != null && murcielagos[i] != null && AcidSplash.getEstado() && AcidSplash.getHitbox().intersects(murcielagos[i].getRectangulo())) {
+    				murcielagos[i].recibirDaño(AcidSplash.getDaño());
+    				if (!murcielagos[i].isActivo()) {
+    					murcielagos[i] = null;
+    				}
+    			}
+    			
+    			
+    			if (murcielagos[i] == null) {
+    				enemigosEliminados++;
+    			}
+    		}
+    	}
     }
     
     
@@ -366,7 +379,7 @@ public class Juego extends InterfaceJuego{
         barraEstado.dibujar(entorno, gondolf);
         
         entorno.cambiarFont("Arial", 15, Color.WHITE);
-        entorno.escribirTexto("Enemigos: " + murcielagos.size() + "/" + MAX_ENEMIGOS, 600, 100);
+        entorno.escribirTexto("Enemigos: " + MAX_ENEMIGOS + "/" + enemigosAMatar, 600, 100);
         entorno.escribirTexto("Eliminados: " + enemigosEliminados, 600, 120);
         
         if (gondolf.estaInvulnerable()) {
@@ -421,21 +434,19 @@ public class Juego extends InterfaceJuego{
         );
         
         boolean puedeMoverse = true;
-        for (Obstaculo obs : obstaculos) {
-            if (hitboxProvisional.intersects(obs.getHitbox())) {
-                puedeMoverse = false;
-                break;
-            }
-        }
         
         // Verificar límites del mapa
         if (hitboxProvisional.x < 0 || hitboxProvisional.x + hitboxProvisional.width > mapaAncho ||
-            hitboxProvisional.y < 0 || hitboxProvisional.y + hitboxProvisional.height > mapaAlto) {
-            puedeMoverse = false;
+        		hitboxProvisional.y < 0 || hitboxProvisional.y + hitboxProvisional.height > mapaAlto) {
+        	puedeMoverse = false;
         }
-        
+        for (int i = 0; i < obstaculos.length; i++) {
+    		if (obstaculos[i] != null && hitboxProvisional.intersects(obstaculos[i].getHitbox())) {
+                puedeMoverse = false;
+                }
+            }
         if (puedeMoverse) {
-            gondolf.mover(dx, dy, obstaculos);
+        	gondolf.mover(dx, dy, obstaculos);
         }
 
         
@@ -523,11 +534,18 @@ public class Juego extends InterfaceJuego{
 //****************************************************************************
 	
 	private void inicializarObstaculos() {
-        obstaculos.add(new Obstaculo(100, 100, "elementos/Mapa/barril.png"));
-        obstaculos.add(new Obstaculo(300, 200, "elementos/Mapa/barril.png"));
-        obstaculos.add(new Obstaculo(500, 400, "elementos/Mapa/barril.png"));
-        obstaculos.add(new Obstaculo(500, 100, "elementos/Mapa/barril.png"));
-        obstaculos.add(new Obstaculo(100, 400, "elementos/Mapa/barril.png"));
+		this.obstaculos = new Obstaculo[MAX_OBSTACULOS];
+        for (int i = 0; i < MAX_OBSTACULOS; i++) {
+        	int x  = 32 + random.nextInt(mapaAncho - 64); 
+        	int y = 32 + random.nextInt(mapaAncho - 64);
+        	obstaculos[i] = new Obstaculo(x, y, "elementos/Mapa/barril.png");
+            while (i > 0 && obstaculos[i].getHitbox().intersects(obstaculos[i-1].getHitbox()) && obstaculos[i].getHitbox().intersects(gondolf.getRectangulo())) {
+            	x  = 32 + random.nextInt(mapaAncho - 64); 
+            	y = 32 + random.nextInt(mapaAncho - 64);
+            	obstaculos[i] = new Obstaculo(x, y, "elementos/Mapa/barril.png");
+            	
+            }
+        }
     }
 	
 	
