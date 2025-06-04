@@ -13,14 +13,16 @@ public class boton {
 	private int y;
 	private int alto;
 	private int ancho;
+	private double escala;
 	private Image imagen;
 	private boolean estadoBoton;
 	
-	public boton(int x, int y, int ancho, int alto, Image imagen) {
+	public boton(int x, int y, int ancho, int alto, double escala, Image imagen) {
 		this.x = x;
 		this.y = y;
 		this.ancho = ancho;
 		this.alto = alto;
+		this.escala = escala;
 		this.estadoBoton = false;
 		this.imagen = imagen;
 	}
@@ -39,7 +41,7 @@ public class boton {
 	
 	public void dibujar(Entorno entorno) {
         if (imagen != null) {
-            entorno.dibujarImagen(imagen, x - ancho/2, y - alto/2, 0, 2);
+            entorno.dibujarImagen(imagen, x - ancho/2, y - alto/2, 0, escala);
         }
     }
 	

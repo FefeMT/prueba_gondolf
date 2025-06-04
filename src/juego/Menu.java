@@ -15,10 +15,12 @@ public class Menu {
 	private Image imagenFondo;
 	
 	private Image imagenMenuHechizos;
-	private Image FireBall;
-	private boton BotonFireBall;
 	private Image Zap;
 	private boton BotonZap;
+	private Image AcidSplash;
+	private boton BotonAcidSplash;
+	private Image FireBall;
+	private boton BotonFireBall;
 	
 	
 	public Menu() {
@@ -28,10 +30,12 @@ public class Menu {
 		this.alto = 100;
 		this.imagenFondo = Herramientas.cargarImagen("elementos/Menu/FondoMenu.png");
 		this.imagenMenuHechizos = Herramientas.cargarImagen("elementos/Menu/New Piskel.png");
-		this.FireBall = Herramientas.cargarImagen("elementos/Menu/fireball boton.png");
-		this.BotonFireBall = new boton(x,450,120,40,FireBall);
 		this.Zap = Herramientas.cargarImagen("elementos/Menu/zap boton.png");
-		this.BotonZap = new boton(x,350,120,40,Zap);
+		this.BotonZap = new boton(x+7,310,120,40,2,Zap);
+		this.AcidSplash = Herramientas.cargarImagen("elementos/Menu/botonAcidSplash.png");
+		this.BotonAcidSplash = new boton(x+7,390,120,40,0.28,AcidSplash);
+		this.FireBall = Herramientas.cargarImagen("elementos/Menu/fireball boton.png");
+		this.BotonFireBall = new boton(x+7,480,120,40,2,FireBall);
 		
 	}
 	
@@ -42,8 +46,9 @@ public class Menu {
 	}
 	
 	private void dibujarBotones(Entorno e) {
-		BotonFireBall.dibujar(e);
 		BotonZap.dibujar(e);
+		BotonAcidSplash.dibujar(e);
+		BotonFireBall.dibujar(e);
 		if (BotonFireBall.getEstado()) {
 			e.dibujarCirculo(BotonFireBall.getX() - BotonFireBall.getAncho()/2, BotonFireBall.getY() - BotonFireBall.getAlto(), 7, new Color(0, 255, 0, 255));
 			e.dibujarCirculo(BotonFireBall.getX() - BotonFireBall.getAncho()/2, BotonFireBall.getY() + BotonFireBall.getAlto()/4, 7, new Color(0, 255, 0, 255));
@@ -51,10 +56,14 @@ public class Menu {
 		if (BotonZap.getEstado()) {
 			e.dibujarCirculo(BotonZap.getX() - BotonZap.getAncho()/2, BotonZap.getY() - BotonZap.getAlto(), 7, new Color(0, 255, 0, 255));
 			e.dibujarCirculo(BotonZap.getX() - BotonZap.getAncho()/2, BotonZap.getY() + BotonZap.getAlto()/4, 7, new Color(0, 255, 0, 255));
-
+		}
+		if (BotonAcidSplash.getEstado()) {
+			e.dibujarCirculo(BotonAcidSplash.getX() - BotonAcidSplash.getAncho()/2, BotonAcidSplash.getY() - BotonAcidSplash.getAlto(), 7, new Color(0, 255, 0, 255));
+			e.dibujarCirculo(BotonAcidSplash.getX() - BotonAcidSplash.getAncho()/2, BotonAcidSplash.getY() + BotonAcidSplash.getAlto()/4, 7, new Color(0, 255, 0, 255));
 		}
 	}
 	
 	public boton getBotonZap(){ return this.BotonZap; }
+	public boton getBotonAcidSplash(){ return this.BotonAcidSplash; }
 	public boton getBotonFireBall(){ return this.BotonFireBall; }
 }

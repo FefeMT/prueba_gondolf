@@ -18,10 +18,12 @@ public class Juego extends InterfaceJuego{
 	private Entorno entorno;
 	private Fondo fondo;
 	private Gondolf gondolf;
-	private boton botonFireBall;
-	private FireBall FireBall;
 	private boton botonZap;
 	private Zap Zap;
+	private boton botonAcidSplash;
+	private AcidSplash AcidSplash;
+	private boton botonFireBall;
+	private FireBall FireBall;
     private ArrayList<Murcielago> murcielagos;
     private ArrayList<Obstaculo> obstaculos = new ArrayList<>();
     private Random random;
@@ -108,10 +110,9 @@ public class Juego extends InterfaceJuego{
 		dibujarElementos();
 		
 		if (!gano && !perdio) {
-		// Procesamiento de un instante de tiempo
         	this.procesarEntrada();
 			this.contadoresDeFrames();
-//			verSiGanoOPerdio();
+			verSiGanoOPerdio();
 			
 		}
 		if (gano) {
@@ -150,15 +151,10 @@ public class Juego extends InterfaceJuego{
 		
     	dibujar(entorno, gondolf.getX(), gondolf.getY(), framesMago);
     	
-    	
-    	if (FireBall != null && FireBall.getEstado()) {
-    		FireBall.dibujarse(entorno);
-    	}
-        
     	// Dibujar obstáculos (opcional, para debug)
-        for (Obstaculo obs : obstaculos) {
-            obs.dibujar(entorno);
-        }
+    	for (Obstaculo obs : obstaculos) {
+    		obs.dibujar(entorno);
+    	}
         
         // Dibujar enemigos
         for (Murcielago m : murcielagos) {
@@ -168,6 +164,16 @@ public class Juego extends InterfaceJuego{
         // Dibujar proyectiles
         for (Proyectil p : gondolf.getProyectiles()) {
             p.dibujar(entorno, framesMago);
+        }
+
+        // Dibujar AcidSplah
+        if (AcidSplash != null && AcidSplash.getEstado()) {
+        	AcidSplash.dibujarse(entorno);
+        }
+        
+        // Dibujar FireBall
+        if (FireBall != null && FireBall.getEstado()) {
+        	FireBall.dibujarse(entorno);
         }
         
         // Dibujar HUD
@@ -194,13 +200,27 @@ public class Juego extends InterfaceJuego{
 	            botonFireBall.apretarBoton();
 	        }
 	    }
+	    if (AcidSplash != null && AcidSplash.getEstado()) {
+	    	AcidSplash.actualizar();
+	        if (!AcidSplash.getEstado()) {
+	        	botonAcidSplash.apretarBoton();
+	        }
+	    }
 	}
 
 	private void casteoFireBall() {
-	    if (botonFireBall.getEstado() && gondolf.getManaActual() >= 20 && (entorno.mousePresente() && entorno.mouseX() < mapaAncho) && (entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO))) { // [cite: 27]
+	    if (botonFireBall.getEstado() && gondolf.getManaActual() >= 20 && (entorno.mousePresente() && entorno.mouseX() < mapaAncho) && (entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO))) {
 	        this.FireBall = new FireBall(entorno.mouseX(), entorno.mouseY());
 	        this.FireBall.castear(entorno.mouseX(), entorno.mouseY());
 	        gondolf.restarMana(this.FireBall.getCoste());
+	    }
+	}
+	
+	private void casteoAcidSplash() {
+		if (botonAcidSplash.getEstado() && gondolf.getManaActual() >= 5 && (entorno.mousePresente() && entorno.mouseX() < mapaAncho) && (entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO))) {
+	        this.AcidSplash = new AcidSplash(entorno.mouseX(), entorno.mouseY());
+	        this.AcidSplash.castear(entorno.mouseX(), entorno.mouseY());
+	        gondolf.restarMana(this.AcidSplash.getCoste());
 	    }
 	}
 	
@@ -214,6 +234,7 @@ public class Juego extends InterfaceJuego{
 	
 	private void asignarBotonesHechizos() {
 		this.botonZap = this.menu.getBotonZap();
+		this.botonAcidSplash = this.menu.getBotonAcidSplash();
 		this.botonFireBall = this.menu.getBotonFireBall();
 	}
 	
@@ -221,27 +242,47 @@ public class Juego extends InterfaceJuego{
 	    mouseX = entorno.mouseX();
 	    mouseY = entorno.mouseY();
 
-	    if (botonZap.estaAdentro(mouseX, mouseY) && entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) { // [cite: 24]
+	    if (botonZap.estaAdentro(mouseX, mouseY) && entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) {
 	        if (!botonZap.getEstado()) {
 	            botonZap.apretarBoton();
 	            if (botonFireBall.getEstado()) {
 	                botonFireBall.apretarBoton();
 	            }
+	            if (botonAcidSplash.getEstado()) {
+	            	botonAcidSplash.apretarBoton();
+	            }
 	        } else {
 	            botonZap.apretarBoton();
 	        }
 	    }
-	    if (botonFireBall.estaAdentro(mouseX, mouseY) && entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) { // [cite: 24]
+	    if (botonFireBall.estaAdentro(mouseX, mouseY) && entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) {
 	        if (!botonFireBall.getEstado()) {
 	            botonFireBall.apretarBoton();
 	            if (botonZap.getEstado()) { 
 	                botonZap.apretarBoton();
 	            }
+	            if (botonAcidSplash.getEstado()) {
+	            	botonAcidSplash.apretarBoton();
+	            }
 	        } else {
 	            botonFireBall.apretarBoton();
 	        }
 	    }
+	    if (botonAcidSplash.estaAdentro(mouseX, mouseY) && entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) {
+	        if (!botonAcidSplash.getEstado()) {
+	        	botonAcidSplash.apretarBoton();
+	            if (botonZap.getEstado()) { 
+	                botonZap.apretarBoton();
+	            }
+	            if (botonFireBall.getEstado()) {
+	            	botonFireBall.apretarBoton();
+	            }
+	        } else {
+	        	botonAcidSplash.apretarBoton();
+	        }
+	    }
 	    casteoFireBall();
+	    casteoAcidSplash();
 	}
 	
 //****************************************************************************
@@ -300,6 +341,10 @@ public class Juego extends InterfaceJuego{
          // Colisión con Fireball
             if (FireBall != null && FireBall.getEstado() && FireBall.getHitbox().intersects(m.getRectangulo())) {
                 m.recibirDaño(FireBall.getDaño());
+            }
+            // Colisión con AcidSplash
+            if (AcidSplash != null && AcidSplash.getEstado() && AcidSplash.getHitbox().intersects(m.getRectangulo())) {
+            	m.recibirDaño(AcidSplash.getDaño());
             }
             
                         
@@ -406,17 +451,6 @@ public class Juego extends InterfaceJuego{
         if (botonZap.getEstado() && entorno.estaPresionada('j')) {  // Izquierda
             gondolf.disparar(3);
         }
-		/*
-        if (mouseX >= MENU_X_INICIO) {
-            // Clic en el menú - seleccionar hechizo
-            manejarClicMenu(mouseX, mouseY);
-        } else if (mouseX < JUEGO_ANCHO) {
-            // Clic en área de juego - lanzar hechizo
-            if (hayHechizoSeleccionado) {
-                lanzarHechizo(mouseX, mouseY);
-            }
-        }
-        */
 	}
 	
 	
@@ -489,13 +523,11 @@ public class Juego extends InterfaceJuego{
 //****************************************************************************
 	
 	private void inicializarObstaculos() {
-        // Agregar obstáculos en posiciones específicas (ejemplo)
         obstaculos.add(new Obstaculo(100, 100, "elementos/Mapa/barril.png"));
         obstaculos.add(new Obstaculo(300, 200, "elementos/Mapa/barril.png"));
         obstaculos.add(new Obstaculo(500, 400, "elementos/Mapa/barril.png"));
         obstaculos.add(new Obstaculo(500, 100, "elementos/Mapa/barril.png"));
         obstaculos.add(new Obstaculo(100, 400, "elementos/Mapa/barril.png"));
-        // Puedes agregar más obstáculos según tu diseño de mapa
     }
 	
 	

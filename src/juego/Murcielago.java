@@ -8,6 +8,8 @@ import entorno.Herramientas;
 public class Murcielago {
     private int x;
     private int y;
+    private double angulo;
+    
     private int tamaño = 50;
     private int velocidad = 2;
     private boolean activo = true;
@@ -28,6 +30,7 @@ public class Murcielago {
     public Murcielago(int x, int y) {
         this.x = x;
         this.y = y;
+        this.angulo = 0;
         
         try {
             // Cargar sprites para cada dirección (2 frames por dirección)
@@ -51,34 +54,31 @@ public class Murcielago {
             System.err.println("Error al cargar sprites de murciélago: " + e.getMessage());
         }
     }
-
-    public void mover(Gondolf jugador) {
-        if (!activo) return;
-        
-        // Calcular dirección hacia el jugador
-        double dx = jugador.getX() - this.x;
-        double dy = jugador.getY() - this.y;
-        
-        // Determinar dirección principal para la animación
-        if (Math.abs(dx) > Math.abs(dy)) {
-            direccion = dx > 0 ? "d" : "a"; // Derecha o izquierda
+    
+    public void mover(Gondolf gondolf) {
+    	if (!activo) return;
+        double deltaX = gondolf.getX() - this.x;
+        double deltaY = gondolf.getY() - this.y;
+        this.angulo = Math.atan2(deltaY, deltaX);
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            if (deltaX > 0) {
+                direccion = "d";
+            } else {
+                direccion = "a";
+            }
         } else {
-            direccion = dy > 0 ? "s" : "w"; // Abajo o arriba
+            if (deltaY > 0) {
+                direccion = "s";
+            } else {
+                direccion = "w";
+            }
         }
         
-        // Normalizar la dirección
-        double distancia = Math.sqrt(dx*dx + dy*dy);
-        if (distancia > 0) {
-            dx = dx / distancia * velocidad;
-            dy = dy / distancia * velocidad;
-        }
-        
-        this.x += dx;
-        this.y += dy;
-        
-        // Actualizar animación
-        actualizarAnimacion();
-    }
+		this.x += Math.cos(this.angulo) * velocidad;
+		this.y += Math.sin(this.angulo) * velocidad;
+		
+		actualizarAnimacion();
+	}
     
     private void actualizarAnimacion() {
         contadorFrames++;
@@ -125,6 +125,7 @@ public class Murcielago {
     
     public int getX() { return x; }
     public int getY() { return y; }
+    public double getAngulo() { return angulo; }
     public int getTamaño() { return tamaño; }
     public int getVida() { return vida; }
 }
