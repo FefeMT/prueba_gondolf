@@ -97,6 +97,14 @@ public class Gondolf {
 	            tiempoInvulnerable = 30;
 	        }
 	    }
+	   
+	   public void curarse(Pociones pocion) {
+		   vidaActual += pocion.getCura();
+		   if (vidaActual > vidaMaxima) {
+			   vidaActual = vidaMaxima;
+		   }
+	   }
+	   
 	    
 	    public void disparar(int direccionDisparo) {
 	        if (cooldownDisparo <= 0 && manaActual >= 2) {

@@ -12,7 +12,7 @@ public class BarraEstado {
     private Image spriteManaVacio;
     private int x, y;
     private int tamanoIcono = 15; // Tamaño reducido de iconos (16px)
-    private int espaciado = 15;    // Espacio reducido entre iconos
+    private int espaciado = 5;    // Espacio reducido entre iconos
 
     public BarraEstado() {
         try {
@@ -55,7 +55,7 @@ public class BarraEstado {
         
         for (int i = 0; i < iconosTotales; i++) {
             Image sprite = (i < iconosLlenos) ? spriteManaLleno : spriteManaVacio;
-            entorno.dibujarImagen(sprite, x + i * (tamanoIcono + espaciado-10), y + tamanoIcono + 10, 0, 0.3);
+            entorno.dibujarImagen(sprite, x + i * (tamanoIcono + espaciado), y + tamanoIcono + 10, 0, 0.3);
         }
     }
 }

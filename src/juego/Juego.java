@@ -25,6 +25,9 @@ public class Juego extends InterfaceJuego{
 	private boton botonFireBall;
 	private FireBall FireBall;
     private Murcielago[] murcielagos;
+    private Pociones[] pociones;
+    private int MAX_pociones = 5;
+    
 //    private ArrayList<Murcielago> murcielagos;
     private Obstaculo[] obstaculos;
     private Random random;
@@ -87,6 +90,8 @@ public class Juego extends InterfaceJuego{
 		// Inicializa lso murcielagos
 //        this.murcielagos = new ArrayList<>();
 		this.murcielagos = new Murcielago[MAX_ENEMIGOS];
+		
+		this.pociones = new Pociones[MAX_pociones];
 
 		// Inicializa la variable random
         this.random = new Random();
@@ -145,6 +150,7 @@ public class Juego extends InterfaceJuego{
 	
 	private void actualizarEstadoJuego() {
         gondolf.actualizar();
+        interactuaConPocion();
 //        manejarSpawnEnemigos();
         spawnearMurcielago();
         actualizarHechizos();
@@ -180,6 +186,13 @@ public class Juego extends InterfaceJuego{
     			murcielagos[i].dibujar(entorno);
     		}
         }
+    	
+    	for (int i = 0; i < pociones.length; i++) {
+    		if (pociones[i] != null) {
+    			pociones[i].dibujarse(entorno);
+    		}
+    	}
+    	
         
         // Dibujar proyectiles
         for (Proyectil p : gondolf.getProyectiles()) {
@@ -359,6 +372,7 @@ public class Juego extends InterfaceJuego{
     				if (murcielagos[i] != null && p.getRectangulo().intersects(murcielagos[i].getRectangulo())) {
     					murcielagos[i].recibirDaño(p.getDaño());
     					if (!murcielagos[i].isActivo()) {
+    						spawnPociones(murcielagos[i]);
         					murcielagos[i] = null;
         				}
     					p.desactivar();
@@ -369,6 +383,7 @@ public class Juego extends InterfaceJuego{
     			if (FireBall != null && murcielagos[i] != null && FireBall.getEstado() && FireBall.getHitbox().intersects(murcielagos[i].getRectangulo())) {
     				murcielagos[i].recibirDaño(FireBall.getDaño());
     				if (!murcielagos[i].isActivo()) {
+    					spawnPociones(murcielagos[i]);
     					murcielagos[i] = null;
     				}
     			}
@@ -376,6 +391,7 @@ public class Juego extends InterfaceJuego{
     			if (AcidSplash != null && murcielagos[i] != null && AcidSplash.getEstado() && AcidSplash.getHitbox().intersects(murcielagos[i].getRectangulo())) {
     				murcielagos[i].recibirDaño(AcidSplash.getDaño());
     				if (!murcielagos[i].isActivo()) {
+    					spawnPociones(murcielagos[i]);
     					murcielagos[i] = null;
     				}
     			}
@@ -389,11 +405,28 @@ public class Juego extends InterfaceJuego{
     }
     
     
-  //****************************************************************************
-    //
+//****************************************************************************
+//
+//    				                       - Funciones pocion -
+//
+//****************************************************************************
+    
+    private void spawnPociones(Murcielago murcielagos) {
+    	int suerte = random.nextInt(10);
+    	for (int i = 0; i < pociones.length; i++) {
+    		if (pociones[i] == null && pociones[i] == pociones[suerte%pociones.length]) {
+    			this.pociones[i] = new Pociones(murcielagos.getX(),murcielagos.getY());	
+    		}
+    	}
+    } 
+    
+    
+    
+//****************************************************************************
+//
 //    				                       - Funciones Jefe -
-    //
-    //****************************************************************************
+//
+//****************************************************************************
     
     
     private void instanciarJefe() {
@@ -519,6 +552,15 @@ public class Juego extends InterfaceJuego{
         if (botonZap.getEstado() && entorno.estaPresionada('j')) {  // Izquierda
             gondolf.disparar(3);
         }
+	}
+	
+	private void interactuaConPocion() {
+		for (int i = 0; i < pociones.length; i++) {
+			if (pociones[i] != null && gondolf.getRectangulo().intersects(pociones[i].getHitbox())) {
+				gondolf.curarse(pociones[i]);
+				pociones[i] = null;
+			}
+		}
 	}
 	
 	
